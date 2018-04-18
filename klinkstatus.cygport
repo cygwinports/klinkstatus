@@ -2,7 +2,10 @@ inherit kde4
 
 NAME="klinkstatus"
 VERSION=17.08.3
-RELEASE=1
+RELEASE=2
 CATEGORY="Devel"
 SUMMARY="KDE link validity checker"
 DESCRIPTION="Part of the KDE web development suite"
+
+PATCH_URI="17.08-drop-kdepimlibs.patch"
+

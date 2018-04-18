@@ -1,0 +1,178 @@
+--- origsrc/klinkstatus-17.08.3/CMakeLists.txt	2017-04-13 12:29:45.000000000 -0500
++++ src/klinkstatus-17.08.3/CMakeLists.txt	2018-04-17 21:01:23.299307200 -0500
+@@ -9,8 +9,6 @@ include_directories (${CMAKE_SOURCE_DIR}
+ 
+ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+ 
+-find_package(KdepimLibs REQUIRED)
+-
+ macro_optional_find_package(LibTidy)
+ macro_log_feature(LIBTIDY_FOUND "libtidy" "HTML Tidy" "http://tidy.sourceforge.net" FALSE "" "Gives KlinkStatus the ability to tidy HTML")
+ macro_bool_to_01(LIBTIDY_FOUND HAVE_LIBTIDY)
+--- origsrc/klinkstatus-17.08.3/src/CMakeLists.txt	2017-04-13 12:29:45.000000000 -0500
++++ src/klinkstatus-17.08.3/src/CMakeLists.txt	2018-04-17 21:01:16.884657200 -0500
+@@ -12,7 +12,6 @@ include_directories(
+     ${CMAKE_SOURCE_DIR}/src/interfaces/engine
+     ${CMAKE_SOURCE_DIR}/src/interfaces/ui
+     ${CMAKE_BINARY_DIR}/src
+-    ${KDEPIMLIBS_INCLUDE_DIR}
+     ${KDE4_INCLUDE_DIR}
+     ${KDE4_INCLUDE_DIR}/threadweaver
+     ${KROSS_INCLUDES}
+@@ -75,11 +74,6 @@ set(libuisettings_SRCS
+     ${CMAKE_SOURCE_DIR}/src/ui/settings/configresultsdialogimpl.cpp
+ )
+ 
+-set(libpim_SRCS 
+-    ${CMAKE_SOURCE_DIR}/src/pim/pimconfigdialog.cpp
+-    ${CMAKE_SOURCE_DIR}/src/pim/pimagent.cpp
+-)
+-
+ set (klinkstatuscommon_LIB_SRCS
+     ${libutils_SRCS}
+     ${libparser_SRCS}
+@@ -87,7 +81,6 @@ set (klinkstatuscommon_LIB_SRCS
+     ${libui_SRCS}
+     ${libuisettings_SRCS}
+     ${libinterfaces_SRC}
+-    ${libpim_SRCS}
+     klsfactory.cpp
+     actionmanager.cpp
+     global.cpp
+@@ -101,7 +94,6 @@ kde4_add_ui_files(klinkstatuscommon_LIB_
+     ${CMAKE_SOURCE_DIR}/src/ui/settings/configsearchdialog.ui
+     ${CMAKE_SOURCE_DIR}/src/ui/settings/configresultsdialog.ui
+     ${CMAKE_SOURCE_DIR}/src/ui/settings/configidentificationdialogui.ui   
+-    ${CMAKE_SOURCE_DIR}/src/pim/identitywidgetui.ui
+ )
+ 
+ kde4_add_kcfg_files(klinkstatuscommon_LIB_SRCS ${CMAKE_SOURCE_DIR}/src/cfg/klsconfig.kcfgc)
+@@ -130,9 +122,6 @@ target_link_libraries(klinkstatuscommon
+     ${KDE4_KROSSUI_LIBS}
+     ${KDE4_KNEWSTUFF2_LIBS}
+     ${KDE4_KUTILS_LIBS}
+-    ${KDEPIMLIBS_MAILTRANSPORT_LIBS}
+-    ${KDEPIMLIBS_KPIMIDENTITIES_LIBS}
+-    ${KDEPIMLIBS_KMIME_LIBS}
+ )
+ 
+ if(LIBTIDY_FOUND)
+--- origsrc/klinkstatus-17.08.3/src/engine/searchmanageragent.cpp	2017-04-13 12:29:45.000000000 -0500
++++ src/klinkstatus-17.08.3/src/engine/searchmanageragent.cpp	2018-04-17 21:16:25.406684800 -0500
+@@ -28,7 +28,6 @@
+ #include "automationconfig.h"
+ #include "engine/searchmanager.h"
+ #include "utils/utils.h"
+-#include "pim/pimagent.h"
+ 
+ 
+ class SearchManagerAgent::SearchManagerAgentPrivate
+@@ -222,6 +221,7 @@ void SearchManagerAgent::slotExportSearc
+     
+ //     kDebug(23100) << html;
+     
++#if 0
+     // E-mail site administrator
+     if(!d->mailRecipient.isEmpty()) {
+         PimAgent agent;
+@@ -239,6 +239,7 @@ void SearchManagerAgent::slotExportSearc
+         
+         agent.sendMessage();
+     }
++#endif
+ 
+     reset();
+ }
+--- origsrc/klinkstatus-17.08.3/src/klinkstatus_part.cpp	2017-04-13 12:29:45.000000000 -0500
++++ src/klinkstatus-17.08.3/src/klinkstatus_part.cpp	2018-04-17 21:17:13.753846100 -0500
+@@ -136,7 +136,9 @@ void KLinkStatusPart::slotConfigureKLink
+     dialog->addPage(new ConfigIdentificationDialog(dialog), i18n("Identification"),
+                     "preferences-web-browser-identification",
+                     i18n("Configure the way KLinkstatus reports itself"));
++#if 0
+     dialog->addPage(new MailTransportWidget(dialog), i18n("Mail Transport"), "configure");
++#endif
+ 
+     // FIXME check this connection - mismatched arguments between slot and signal
+     connect(dialog, SIGNAL(settingsChanged(const QString&)), view_, SLOT(slotLoadSettings()));
+--- origsrc/klinkstatus-17.08.3/src/plugins/automation/automationpart.cpp	2017-04-13 12:29:45.000000000 -0500
++++ src/klinkstatus-17.08.3/src/plugins/automation/automationpart.cpp	2018-04-17 21:18:52.656065300 -0500
+@@ -20,10 +20,12 @@
+ 
+ #include "automationpart.h"
+ 
++#if 0
+ #include <kpimidentities/identity.h>
+ #include <kpimidentities/identitymanager.h>
+ #include <mailtransport/transport.h>
+ #include <mailtransport/transportmanager.h>
++#endif
+ 
+ #include <kgenericfactory.h>
+ #include <kstandarddirs.h>
+@@ -37,7 +39,9 @@
+ #include "automationconfig.h"
+ #include "engine/searchmanageragent.h"
+ #include "utils/timer.h"
++#if 0
+ #include "pim/pimconfigdialog.h"
++#endif
+ #include "klsconfig.h"
+ 
+ 
+@@ -196,6 +200,7 @@ void AutomationPart::slotAutomationSetti
+ 
+ void AutomationPart::slotAutomationSettingsFinished()
+ {
++#if 0
+     bool needIdentity = false;
+     bool needMailTransport = false;
+ 
+@@ -243,6 +248,7 @@ void AutomationPart::slotAutomationSetti
+         PimConfigDialog dialog(0, "pimConfigDialog", KLSConfig::self());
+         dialog.exec();
+     }
++#endif
+ }
+ 
+ 
+--- origsrc/klinkstatus-17.08.3/src/ui/settings/configidentificationdialogui.ui	2017-04-13 12:29:45.000000000 -0500
++++ src/klinkstatus-17.08.3/src/ui/settings/configidentificationdialogui.ui	2018-04-17 21:15:08.661102500 -0500
+@@ -112,24 +112,6 @@
+      </layout>
+     </widget>
+    </item>
+-   <item>
+-    <widget class="KButtonGroup" name="kbuttongroup" >
+-     <property name="sizePolicy" >
+-      <sizepolicy vsizetype="Expanding" hsizetype="Preferred" >
+-       <horstretch>0</horstretch>
+-       <verstretch>0</verstretch>
+-      </sizepolicy>
+-     </property>
+-     <property name="title" >
+-      <string>Identity</string>
+-     </property>
+-     <layout class="QVBoxLayout" name="verticalLayout_3" >
+-      <item>
+-       <widget class="IdentityWidget" native="1" name="widget" />
+-      </item>
+-     </layout>
+-    </widget>
+-   </item>
+   </layout>
+  </widget>
+  <customwidgets>
+@@ -139,12 +121,6 @@
+    <header>kbuttongroup.h</header>
+    <container>1</container>
+   </customwidget>
+-  <customwidget>
+-   <class>IdentityWidget</class>
+-   <extends>QWidget</extends>
+-   <header>pim/pimconfigdialog.h</header>
+-   <container>1</container>
+-  </customwidget>
+  </customwidgets>
+  <tabstops>
+   <tabstop>kcfg_SendIdentification</tabstop>
